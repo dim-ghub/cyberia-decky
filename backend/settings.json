@@ -1,0 +1,11 @@
+{
+  "api_list": [
+    {
+      "name": "Morrenus",
+      "url": "https://manifest.morrenus.xyz/api/v1/manifest/<appid>",
+      "api_key": "",
+      "enabled": true
+    }
+  ],
+  "accela_location": ""
+}

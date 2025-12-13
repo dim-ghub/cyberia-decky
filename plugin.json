@@ -1,0 +1,8 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SteamClientHomebrew/Millennium/main/src/sys/plugin-schema.json",
+  "name": "cyberia",
+  "common_name": "Cyberia",
+  "description": "Cyberia Steam Plugin!",
+  "version": "1.0",
+  "include": ["public"]
+}

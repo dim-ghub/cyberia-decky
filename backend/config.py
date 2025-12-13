@@ -1,0 +1,11 @@
+WEBKIT_DIR_NAME = "Cyberia"
+WEB_UI_JS_FILE = "cyberia.js"
+
+SETTINGS_JSON_FILE = "settings.json"
+
+HTTP_TIMEOUT_SECONDS = 15
+HTTP_PROXY_TIMEOUT_SECONDS = 15
+
+UPDATE_CHECK_INTERVAL_SECONDS = 2 * 60 * 60  # 2 hours
+
+USER_AGENT = "cyberia-v1"
