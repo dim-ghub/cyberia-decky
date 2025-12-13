@@ -47,14 +47,6 @@ Supports multiple API endpoints with individual configuration:
 
 This plugin was initially inspired by the **LuaTools** plugin for Steam. While LuaTools served as a conceptual foundation and starting point, **nearly all functionality has been completely rewritten** from scratch to create Cyberia.
 
-### Key Differences from LuaTools
-
-- **Complete Code Rewrite**: The entire codebase has been reimplemented with modern JavaScript practices
-- **Enhanced UI/UX**: Redesigned interface with custom theming and animations
-- **Improved Architecture**: Better separation of concerns between frontend and backend
-- **Extended Functionality**: Added features like multi-API support and real-time progress tracking
-- **Modern JavaScript**: Uses contemporary ES6+ features and async/await patterns
-
 ## Installation
 
 This plugin is designed to work with the **Millennium** Steam client framework. Place the plugin files in the appropriate Millennium plugins directory.
@@ -78,3 +70,4 @@ This plugin is designed to work with the **Millennium** Steam client framework. 
 ## License
 
 This project is provided as-is for educational and personal use. Please ensure compliance with Steam's Terms of Service and applicable laws when using this plugin.
+
