@@ -1032,11 +1032,15 @@
               clearInterval(timer);
               runState.inProgress = false;
               runState.appid = null;
-              // remove button since game is added (works even if popup is hidden)
-              const btnEl = document.querySelector(".cyberia-button");
-              if (btnEl && btnEl.parentElement) {
-                btnEl.parentElement.removeChild(btnEl);
-              }
+              // remove all Cyberia buttons since game is added (works even if popup is hidden)
+              const cyberiaBtns = document.querySelectorAll(".cyberia-button");
+              cyberiaBtns.forEach((btn) => {
+                if (btn && btn.parentElement) {
+                  btn.parentElement.removeChild(btn);
+                }
+              });
+              // reset the insertion flag
+              window.__CyberiaButtonInserted = false;
             }
             if (st.status === "failed") {
               // show error in the popup if visible
