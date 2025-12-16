@@ -194,8 +194,9 @@ def _download_zip_for_app(appid: int):
             logger.log(f"Trying with key: Bearer {api_key}")
             headers = {
                 "User-Agent": USER_AGENT,
-                "Authorization": f"Bearer {api_key}",
             }
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
             if _is_download_cancelled(appid):
                 logger.log(
                     f"Cyberia: Download cancelled before contacting API '{name}'"
