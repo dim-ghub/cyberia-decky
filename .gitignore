@@ -12,3 +12,5 @@ backend/settings.json
 # OS
 .DS_Store
 Thumbs.db
+
+build_release.sh
