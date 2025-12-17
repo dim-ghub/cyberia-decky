@@ -13,4 +13,8 @@ backend/settings.json
 .DS_Store
 Thumbs.db
 
+# Virtual environments
+.venv/
+venv/
+
 build_release.sh
