@@ -93,7 +93,6 @@ def _get_download_state(appid: int) -> dict:
 
 def _process_and_install_lua(appid: int, zip_path: str) -> None:
     """Process downloaded zip and call ACCELA app to handle installation."""
-    import subprocess
 
     if _is_download_cancelled(appid):
         raise RuntimeError("cancelled")
@@ -118,7 +117,12 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             raise RuntimeError("cancelled")
 
         logger.log(f"Cyberia: Calling ACCELA with zip: {zip_path}")
-        result = subprocess.run(command, capture_output=True, text=True)
+
+        # Create a clean environment without problematic LD_PRELOAD
+        env = os.environ.copy()
+        env.pop('LD_PRELOAD', None)
+
+        result = subprocess.run(command, capture_output=True, text=True, env=env)
 
         if result.returncode != 0:
             logger.warn(f"Cyberia: ACCELA failed with return code {result.returncode}")
