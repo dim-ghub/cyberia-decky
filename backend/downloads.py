@@ -6,6 +6,7 @@ import json
 import os
 import platform
 import shutil
+import subprocess
 import threading
 import time
 from typing import Dict
