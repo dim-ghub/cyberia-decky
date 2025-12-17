@@ -65,8 +65,71 @@ def ensure_temp_download_dir() -> str:
     return root
 
 
+def get_accela_api_key() -> str:
+    """
+    Attempts to read the Morrenus API key from ACCELA's QSettings.
+    Returns empty string if PyQt6 is not available or key is not found.
+    """
+    try:
+        from PyQt6.QtCore import QSettings
+
+        APP_NAME = "ACCELA"
+        ORG_NAME = "Tachibana Labs"
+
+        settings = QSettings(ORG_NAME, APP_NAME)
+
+        # Try common key names for the Morrenus API key
+        possible_keys = [
+            "morrenus/api_key",
+            "morrenus_api_key",
+            "morrenus/key",
+            "morrenusKey",
+            "morrenus_key",
+            "api_key",
+            "MORRENUS_API_KEY",
+            "morrenus",
+            "manifest/api_key",
+            "key"
+        ]
+
+        # First, try the common keys
+        for key in possible_keys:
+            value = settings.value(key)
+            if value:
+                return str(value)
+
+        # If not found, search for any key containing "morrenus" in its name
+        all_keys = settings.allKeys()
+        for key in all_keys:
+            if "morrenus" in key.lower():
+                value = settings.value(key)
+                if value:
+                    return str(value)
+
+        # If still not found, try to find a key that looks like an API key
+        # (long alphanumeric string) and contains "morrenus" in its value
+        for key in all_keys:
+            value = settings.value(key)
+            if value and isinstance(value, str):
+                # Check if value contains "morrenus" or looks like an API key
+                if "morrenus" in value.lower():
+                    return str(value)
+                # API keys are typically long (20+ chars) and alphanumeric
+                if len(value) >= 20 and value.replace("-", "").replace("_", "").isalnum():
+                    return str(value)
+
+        return ""
+    except ImportError:
+        # PyQt6 not available
+        return ""
+    except Exception:
+        # Any other error reading settings
+        return ""
+
+
 __all__ = [
     "ensure_temp_download_dir",
+    "get_accela_api_key",
     "normalize_manifest_text",
     "read_json",
     "read_text",

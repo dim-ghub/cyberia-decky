@@ -15,7 +15,7 @@ from api_manifest import load_api_manifest
 from config import USER_AGENT
 from http_client import ensure_http_client
 from logger import logger
-from utils import ensure_temp_download_dir
+from utils import ensure_temp_download_dir, get_accela_api_key
 
 DOWNLOAD_STATE: Dict[int, Dict[str, any]] = {}
 DOWNLOAD_LOCK = threading.Lock()
@@ -66,6 +66,13 @@ def _find_accela_executable():
                 return path
     else:
         # Linux/Mac behavior
+        # Check system-wide location first
+        system_run_sh = "/usr/share/ACCELA/systemrun.sh"
+        if os.path.exists(system_run_sh):
+            logger.log("Cyberia: Found ACCELA systemrun.sh script")
+            return system_run_sh
+
+        # Check user-specific locations
         accela_home = os.path.expanduser("~/.local/share/ACCELA")
         run_sh = os.path.join(accela_home, "run.sh")
         accela_bin = os.path.join(accela_home, "ACCELA")
@@ -130,15 +137,16 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             logger.log(f"Cyberia: Using ACCELA virtual environment: {venv_path}")
 
             # Check if PyQt6 is installed
-            check_cmd = ["bash", "-c", f"source {venv_python} -m pip show PyQt6"]
+            check_cmd = [venv_python, "-m", "pip", "show", "PyQt6"]
             result = subprocess.run(check_cmd, capture_output=True, text=True)
 
             if result.returncode != 0:
                 logger.warn("Cyberia: PyQt6 not found in ACCELA venv, attempting to install...")
-                install_cmd = ["bash", "-c", f"source {venv_python} -m pip install -r {accela_dir}/requirements.txt"]
+                install_cmd = [venv_python, "-m", "pip", "install", "-r", f"{accela_dir}/requirements.txt"]
                 subprocess.run(install_cmd, capture_output=True)
 
-            command = ["bash", "-c", f"source {venv_path}/bin/activate && {accela_path} {zip_path}"]
+            # Run ACCELA's run.sh script which handles venv activation
+            command = ["bash", accela_path, zip_path]
         else:
             # Regular execution
             command = [accela_path, zip_path]
@@ -156,9 +164,29 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
 
         logger.log(f"Cyberia: Calling ACCELA with zip: {zip_path}")
 
-        # Only remove LD_PRELOAD, everything else let ACCELA handle
+        # Create a clean environment to avoid Qt library conflicts
         env = os.environ.copy()
+
+        # Remove problematic environment variables
         env.pop('LD_PRELOAD', None)
+
+        # Clear Qt library path issues that cause Qt_6_PRIVATE_API errors
+        env.pop('QT_PLUGIN_PATH', None)
+        env.pop('QML2_IMPORT_PATH', None)
+        env.pop('QTWEBENGINEPROCESS_PATH', None)
+        env.pop('QT_INSTALL_PREFIX', None)
+        env.pop('QT_INSTALL_PLUGINS', None)
+
+        # Set LD_LIBRARY_PATH to use bundled Qt6 libraries from ACCELA venv
+        if os.path.exists(venv_path):
+            qt6_lib_path = os.path.join(venv_path, "lib", "python3.13", "site-packages", "PyQt6", "Qt6", "lib")
+            if os.path.exists(qt6_lib_path):
+                current_ld_path = env.get('LD_LIBRARY_PATH', '')
+                if current_ld_path:
+                    env['LD_LIBRARY_PATH'] = f"{qt6_lib_path}:{current_ld_path}"
+                else:
+                    env['LD_LIBRARY_PATH'] = qt6_lib_path
+                logger.log(f"Cyberia: Set LD_LIBRARY_PATH to: {qt6_lib_path}")
 
         result = subprocess.run(command, capture_output=True, text=True, env=env)
 
@@ -224,6 +252,14 @@ def _download_zip_for_app(appid: int):
         name = api.get("name", "Unknown")
         template = api.get("url", "")
         api_key = api.get("api_key", "")
+
+        # Check if this is a Morrenus API and auto-fill API key from ACCELA
+        if "morrenus.xyz" in template.lower() and not api_key:
+            accela_key = get_accela_api_key()
+            if accela_key:
+                logger.log(f"Cyberia: Found Morrenus API key in ACCELA settings, using it")
+                api_key = accela_key
+
         success_code = 200
         unavailable_code = 404
         url = template.replace("<appid>", str(appid))
