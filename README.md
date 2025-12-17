@@ -51,6 +51,18 @@ This plugin was initially inspired by the **LuaTools** plugin for Steam. While L
 
 This plugin is designed to work with the **Millennium** Steam client framework. Place the plugin files in the appropriate Millennium plugins directory.
 
+After installing the plugin in Millennium:
+
+**For Linux users:**
+1. Navigate to the plugin directory: `cd /path/to/millennium/plugins/cyberia`
+2. Run the installation script: `./install_deps.sh`
+3. This will install the required dependencies for the plugin to function properly.
+
+**For Windows users:**
+1. Navigate to the plugin directory: `C:\path\to\millennium\plugins\cyberia`
+2. Run the installation script: `install_deps.bat`
+3. This will install the required dependencies for the plugin to function properly.
+
 ## Configuration
 
 1. Click the "Settings" button next to "Enter Cyberia"
