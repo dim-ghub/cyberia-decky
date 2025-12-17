@@ -79,18 +79,7 @@ def get_accela_api_key() -> str:
         settings = QSettings(ORG_NAME, APP_NAME)
 
         # Try common key names for the Morrenus API key
-        possible_keys = [
-            "morrenus/api_key",
-            "morrenus_api_key",
-            "morrenus/key",
-            "morrenusKey",
-            "morrenus_key",
-            "api_key",
-            "MORRENUS_API_KEY",
-            "morrenus",
-            "manifest/api_key",
-            "key"
-        ]
+        possible_keys = ["morrenus_api_key"]
 
         # First, try the common keys
         for key in possible_keys:
@@ -104,18 +93,6 @@ def get_accela_api_key() -> str:
             if "morrenus" in key.lower():
                 value = settings.value(key)
                 if value:
-                    return str(value)
-
-        # If still not found, try to find a key that looks like an API key
-        # (long alphanumeric string) and contains "morrenus" in its value
-        for key in all_keys:
-            value = settings.value(key)
-            if value and isinstance(value, str):
-                # Check if value contains "morrenus" or looks like an API key
-                if "morrenus" in value.lower():
-                    return str(value)
-                # API keys are typically long (20+ chars) and alphanumeric
-                if len(value) >= 20 and value.replace("-", "").replace("_", "").isalnum():
                     return str(value)
 
         return ""

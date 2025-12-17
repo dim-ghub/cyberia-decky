@@ -33,10 +33,14 @@ def _find_accela_executable():
                 if accela_path:
                     accela_path = accela_path.strip()
                     if accela_path and os.path.exists(accela_path):
-                        logger.log(f"Cyberia: Using ACCELA from settings.json: {accela_path}")
+                        logger.log(
+                            f"Cyberia: Using ACCELA from settings.json: {accela_path}"
+                        )
                         return accela_path
                     elif accela_path:
-                        logger.warn(f"Cyberia: ACCELA path in settings.json not found: {accela_path}")
+                        logger.warn(
+                            f"Cyberia: ACCELA path in settings.json not found: {accela_path}"
+                        )
         except Exception as e:
             logger.warn(f"Failed to load settings.json: {e}")
 
@@ -130,7 +134,7 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
     accela_dir = os.path.dirname(accela_path)
     venv_path = os.path.join(accela_dir, ".venv")
 
-    if os.path.exists(venv_path) and accela_path.endswith('.sh'):
+    if os.path.exists(venv_path) and accela_path.endswith(".sh"):
         # Check if dependencies are installed
         venv_python = os.path.join(venv_path, "bin", "python")
         if os.path.exists(venv_python):
@@ -141,8 +145,17 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             result = subprocess.run(check_cmd, capture_output=True, text=True)
 
             if result.returncode != 0:
-                logger.warn("Cyberia: PyQt6 not found in ACCELA venv, attempting to install...")
-                install_cmd = [venv_python, "-m", "pip", "install", "-r", f"{accela_dir}/requirements.txt"]
+                logger.warn(
+                    "Cyberia: PyQt6 not found in ACCELA venv, attempting to install..."
+                )
+                install_cmd = [
+                    venv_python,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    f"{accela_dir}/requirements.txt",
+                ]
                 subprocess.run(install_cmd, capture_output=True)
 
             # Run ACCELA's run.sh script which handles venv activation
@@ -150,13 +163,13 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         else:
             # Regular execution
             command = [accela_path, zip_path]
-            if accela_path.endswith('.sh'):
-                command.insert(0, 'bash')
+            if accela_path.endswith(".sh"):
+                command.insert(0, "bash")
     else:
         # Regular execution
         command = [accela_path, zip_path]
-        if accela_path.endswith('.sh'):
-            command.insert(0, 'bash')
+        if accela_path.endswith(".sh"):
+            command.insert(0, "bash")
 
     try:
         if _is_download_cancelled(appid):
@@ -168,24 +181,26 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         env = os.environ.copy()
 
         # Remove problematic environment variables
-        env.pop('LD_PRELOAD', None)
+        env.pop("LD_PRELOAD", None)
 
         # Clear Qt library path issues that cause Qt_6_PRIVATE_API errors
-        env.pop('QT_PLUGIN_PATH', None)
-        env.pop('QML2_IMPORT_PATH', None)
-        env.pop('QTWEBENGINEPROCESS_PATH', None)
-        env.pop('QT_INSTALL_PREFIX', None)
-        env.pop('QT_INSTALL_PLUGINS', None)
+        env.pop("QT_PLUGIN_PATH", None)
+        env.pop("QML2_IMPORT_PATH", None)
+        env.pop("QTWEBENGINEPROCESS_PATH", None)
+        env.pop("QT_INSTALL_PREFIX", None)
+        env.pop("QT_INSTALL_PLUGINS", None)
 
         # Set LD_LIBRARY_PATH to use bundled Qt6 libraries from ACCELA venv
         if os.path.exists(venv_path):
-            qt6_lib_path = os.path.join(venv_path, "lib", "python3.13", "site-packages", "PyQt6", "Qt6", "lib")
+            qt6_lib_path = os.path.join(
+                venv_path, "lib", "python3.13", "site-packages", "PyQt6", "Qt6", "lib"
+            )
             if os.path.exists(qt6_lib_path):
-                current_ld_path = env.get('LD_LIBRARY_PATH', '')
+                current_ld_path = env.get("LD_LIBRARY_PATH", "")
                 if current_ld_path:
-                    env['LD_LIBRARY_PATH'] = f"{qt6_lib_path}:{current_ld_path}"
+                    env["LD_LIBRARY_PATH"] = f"{qt6_lib_path}:{current_ld_path}"
                 else:
-                    env['LD_LIBRARY_PATH'] = qt6_lib_path
+                    env["LD_LIBRARY_PATH"] = qt6_lib_path
                 logger.log(f"Cyberia: Set LD_LIBRARY_PATH to: {qt6_lib_path}")
 
         result = subprocess.run(command, capture_output=True, text=True, env=env)
@@ -257,7 +272,9 @@ def _download_zip_for_app(appid: int):
         if "morrenus.xyz" in template.lower() and not api_key:
             accela_key = get_accela_api_key()
             if accela_key:
-                logger.log(f"Cyberia: Found Morrenus API key in ACCELA settings, using it")
+                logger.log(
+                    "Cyberia: Found Morrenus API key in ACCELA settings, using it"
+                )
                 api_key = accela_key
 
         success_code = 200
