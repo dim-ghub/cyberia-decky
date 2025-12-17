@@ -67,21 +67,8 @@ This plugin is designed to work with the **Millennium** Steam client framework. 
 3. Monitor progress in the modal popup
 4. Game will be automatically added to your Steam library when complete
 
-## Troubleshooting
-
-### ACCELA Execution Errors
-
-If you encounter errors during ACCELA execution:
-
-1. **Qt6 Library Errors**: The plugin automatically clears problematic Qt6 environment variables. If issues persist, ensure ACCELA is using system Qt6 libraries.
-
-2. **Timeout**: ACCELA has a 300-second timeout limit. Large games may take longer.
-
-3. **Permissions**: The plugin automatically attempts to make ACCELA executable on Linux/Mac. If it fails, manually set: `chmod +x ~/.local/share/ACCELA/run.sh`
-
-4. **Environment Conflicts**: The plugin clears LD_PRELOAD, QT_PLUGIN_PATH, and other problematic environment variables before launching ACCELA.
-
 ## License
 
 This project is provided as-is for educational and personal use. Please ensure compliance with Steam's Terms of Service and applicable laws when using this plugin.
+
 
