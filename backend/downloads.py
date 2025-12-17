@@ -111,7 +111,20 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             f'Add: {{"accela_location": "C:\\\\path\\\\to\\\\ACCELA.exe"}}'
         )
 
+    # Verify ACCELA is executable
+    if not os.access(accela_path, os.X_OK):
+        logger.warn(f"Cyberia: ACCELA found but not executable: {accela_path}")
+        # Try to make it executable (Linux/Mac)
+        try:
+            os.chmod(accela_path, 0o755)
+            logger.log(f"Cyberia: Made ACCELA executable: {accela_path}")
+        except Exception as e:
+            logger.warn(f"Cyberia: Failed to make ACCELA executable: {e}")
+
+    # If it's a shell script, ensure it runs with bash
     command = [accela_path, zip_path]
+    if accela_path.endswith('.sh'):
+        command.insert(0, 'bash')
 
     try:
         if _is_download_cancelled(appid):
@@ -119,18 +132,28 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
 
         logger.log(f"Cyberia: Calling ACCELA with zip: {zip_path}")
 
-        # Create a clean environment without problematic LD_PRELOAD
+        # Create a clean environment without problematic variables
         env = os.environ.copy()
         env.pop('LD_PRELOAD', None)
 
-        # Clear Qt6 library path issues that cause Qt_6_PRIVATE_API errors
+        # Clear Qt library path issues that cause Qt_6_PRIVATE_API errors
         env.pop('QT_PLUGIN_PATH', None)
         env.pop('QML2_IMPORT_PATH', None)
+        env.pop('QTWEBENGINEPROCESS_PATH', None)
 
         # Force Qt to use system libraries instead of bundled ones
-        env['QT_QPA_PLATFORM'] = 'xcb'
+        if platform.system() != "Windows":
+            env['QT_QPA_PLATFORM'] = 'xcb'
 
-        result = subprocess.run(command, capture_output=True, text=True, env=env)
+        # Disable Qt high-DPI scaling to avoid conflicts
+        env['QT_AUTO_SCREEN_SCALE_FACTOR'] = '0'
+        env['QT_ENABLE_HIGHDPI_SCALING'] = '0'
+
+        # Set library path to use system Qt
+        env.pop('QT_INSTALL_PREFIX', None)
+        env.pop('QT_INSTALL_PLUGINS', None)
+
+        result = subprocess.run(command, capture_output=True, text=True, env=env, timeout=300)
 
         if result.returncode != 0:
             logger.warn(f"Cyberia: ACCELA failed with return code {result.returncode}")
@@ -143,6 +166,9 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
             logger.log(f"Cyberia: ACCELA output: {result.stdout}")
 
         _set_download_state(appid, {"installedPath": zip_path})
+    except subprocess.TimeoutExpired:
+        logger.warn("Cyberia: ACCELA execution timed out after 300 seconds")
+        raise RuntimeError("ACCELA execution timed out (300s limit reached)")
     except Exception as exc:
         logger.warn("Cyberia: Failed to execute ACCELA: {exc}")
         raise RuntimeError(f"ACCELA execution failed: {exc}")
