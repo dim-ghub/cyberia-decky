@@ -123,6 +123,13 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
         env = os.environ.copy()
         env.pop('LD_PRELOAD', None)
 
+        # Clear Qt6 library path issues that cause Qt_6_PRIVATE_API errors
+        env.pop('QT_PLUGIN_PATH', None)
+        env.pop('QML2_IMPORT_PATH', None)
+
+        # Force Qt to use system libraries instead of bundled ones
+        env['QT_QPA_PLATFORM'] = 'xcb'
+
         result = subprocess.run(command, capture_output=True, text=True, env=env)
 
         if result.returncode != 0:
