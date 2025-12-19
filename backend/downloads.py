@@ -80,6 +80,7 @@ def _find_accela_executable():
         accela_home = os.path.expanduser("~/.local/share/ACCELA")
         run_sh = os.path.join(accela_home, "run.sh")
         accela_bin = os.path.join(accela_home, "ACCELA")
+        accela_appimage = os.path.join(accela_home, "ACCELA.AppImage")
 
         if os.path.exists(run_sh):
             logger.log("Cyberia: Found ACCELA run.sh script")
@@ -87,6 +88,9 @@ def _find_accela_executable():
         elif os.path.exists(accela_bin):
             logger.log("Cyberia: Found ACCELA binary")
             return accela_bin
+        elif os.path.exists(accela_appimage):
+            logger.log("Cyberia: Found ACCELA.AppImage")
+            return accela_appimage
 
     return None
 
@@ -134,8 +138,8 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
     accela_dir = os.path.dirname(accela_path)
     venv_path = os.path.join(accela_dir, ".venv")
 
-    if os.path.exists(venv_path) and accela_path.endswith(".sh"):
-        # Check if dependencies are installed
+    if os.path.exists(venv_path) and (accela_path.endswith(".sh") or accela_path.endswith(".AppImage")):
+        # Check if dependencies are installed (for AppImage, check in the ACCELA directory)
         venv_python = os.path.join(venv_path, "bin", "python")
         if os.path.exists(venv_python):
             logger.log(f"Cyberia: Using ACCELA virtual environment: {venv_path}")
@@ -159,17 +163,23 @@ def _process_and_install_lua(appid: int, zip_path: str) -> None:
                 subprocess.run(install_cmd, capture_output=True)
 
             # Run ACCELA's run.sh script which handles venv activation
-            command = ["bash", accela_path, zip_path]
+            # For AppImage, run directly (no bash prefix)
+            if accela_path.endswith(".AppImage"):
+                command = [accela_path, zip_path]
+            else:
+                command = ["bash", accela_path, zip_path]
         else:
             # Regular execution
             command = [accela_path, zip_path]
             if accela_path.endswith(".sh"):
                 command.insert(0, "bash")
+            # AppImage doesn't need bash prefix
     else:
         # Regular execution
         command = [accela_path, zip_path]
         if accela_path.endswith(".sh"):
             command.insert(0, "bash")
+        # AppImage doesn't need bash prefix
 
     try:
         if _is_download_cancelled(appid):
