@@ -1035,31 +1035,33 @@
       // Insert settings button after cyberia button
       cyberiaButton.after(settingsButton);
 
-      // Create SLSonline button (insert between cyberia and settings)
-      const slsonlineButton = document.createElement("a");
-      slsonlineButton.href = "#";
-      slsonlineButton.className =
-        "btnv6_blue_hoverfade btn_medium cyberia-button cyberia-slsonline-btn";
-      const slsonlineSpan = document.createElement("span");
-      slsonlineSpan.textContent = "Add to SLSonline";
-      slsonlineButton.appendChild(slsonlineSpan);
-      slsonlineButton.title = "Add/Remove from SLSteam FakeAppIds";
-      slsonlineButton.style.marginLeft = "6px";
+      // Create SLSonline button (insert between cyberia and settings) - Windows only
+      if (!isWindowsPlatform()) {
+        const slsonlineButton = document.createElement("a");
+        slsonlineButton.href = "#";
+        slsonlineButton.className =
+          "btnv6_blue_hoverfade btn_medium cyberia-button cyberia-slsonline-btn";
+        const slsonlineSpan = document.createElement("span");
+        slsonlineSpan.textContent = "Add to SLSonline";
+        slsonlineButton.appendChild(slsonlineSpan);
+        slsonlineButton.title = "Add/Remove from SLSteam FakeAppIds";
+        slsonlineButton.style.marginLeft = "6px";
 
-      // Local click handler suppressed; delegated handler manages actions
-      slsonlineButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        backendLog("SLSonline button clicked (delegated handler will process)");
-      });
+        // Local click handler suppressed; delegated handler manages actions
+        slsonlineButton.addEventListener("click", (e) => {
+          e.preventDefault();
+          backendLog("SLSonline button clicked (delegated handler will process)");
+        });
 
-      // Insert slsonline button after cyberia button (before settings)
-      cyberiaButton.after(slsonlineButton);
+        // Insert slsonline button after cyberia button (before settings)
+        cyberiaButton.after(slsonlineButton);
 
-      // Move settings button to the end (after slsonline)
-      slsonlineButton.after(settingsButton);
+        // Move settings button to the end (after slsonline)
+        slsonlineButton.after(settingsButton);
 
-      // Check initial state for SLSonline button
-      updateSlsonlineButtonState(slsonlineButton);
+        // Check initial state for SLSonline button
+        updateSlsonlineButtonState(slsonlineButton);
+      }
 
       window.__CyberiaButtonInserted = true;
       backendLog("Cyberia button inserted");

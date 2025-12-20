@@ -9,8 +9,8 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # Check if requirements.txt exists
-if [ ! -f "backend/requirements.txt" ]; then
-    echo "Error: backend/requirements.txt not found"
+if [ ! -f "requirements.txt" ]; then
+    echo "Error: requirements.txt not found"
     exit 1
 fi
 
@@ -33,7 +33,7 @@ echo "Virtual environment created successfully"
 
 # Install dependencies in local venv
 echo "Installing dependencies in local venv..."
-if ! .venv/bin/pip install -r backend/requirements.txt; then
+if ! .venv/bin/pip install -r requirements.txt; then
     echo "Error: Failed to install dependencies in local venv"
     exit 1
 fi
@@ -43,7 +43,7 @@ echo "Local venv dependencies installed successfully"
 MILLENNIUM_VENV="$HOME/.local/share/millennium/.venv"
 if [ -d "$MILLENNIUM_VENV" ]; then
     echo "Installing dependencies in Millennium venv..."
-    if ! "$MILLENNIUM_VENV/bin/pip" install -r backend/requirements.txt; then
+    if ! "$MILLENNIUM_VENV/bin/pip" install -r requirements.txt; then
         echo "Warning: Failed to install dependencies in Millennium venv"
     else
         echo "Millennium venv dependencies installed successfully"
