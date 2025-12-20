@@ -38,20 +38,16 @@ def get_template_settings() -> Dict[str, Any]:
                 "name": "Morrenus",
                 "url": "https://manifest.morrenus.xyz/api/v1/manifest/<appid>",
                 "api_key": "",
-                "enabled": True
+                "enabled": True,
             }
         ],
-        "accela_location": ""
+        "accela_location": "",
     }
 
 
 def get_default_settings() -> Dict[str, Any]:
     """Returns the default settings structure with version."""
-    return {
-        "version": SETTINGS_VERSION,
-        "api_list": [],
-        "accela_location": ""
-    }
+    return {"version": SETTINGS_VERSION, "api_list": [], "accela_location": ""}
 
 
 def migrate_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
@@ -63,7 +59,9 @@ def migrate_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
 
     # Add version field if missing
     if current_version < SETTINGS_VERSION:
-        logger.log(f"Migrating settings from version {current_version} to {SETTINGS_VERSION}")
+        logger.log(
+            f"Migrating settings from version {current_version} to {SETTINGS_VERSION}"
+        )
         settings["version"] = SETTINGS_VERSION
         current_version = SETTINGS_VERSION
 
@@ -91,9 +89,11 @@ def load_settings() -> Dict[str, Any]:
     try:
         settings = read_json(settings_path)
         if not isinstance(settings, dict):
-            logger.warn("settings.json has invalid format, preserving backup and recreating from template")
+            logger.warn(
+                "settings.json has invalid format, preserving backup and recreating from template"
+            )
             # Backup corrupted file
-            backup_path = backend_path(f"settings.json.backup")
+            backup_path = backend_path("settings.json.backup")
             try:
                 shutil.copy2(settings_path, backup_path)
                 logger.log(f"Corrupted settings backed up to {backup_path}")

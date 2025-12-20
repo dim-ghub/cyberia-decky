@@ -11,6 +11,12 @@ from http_client import close_http_client
 from logger import logger as shared_logger
 from paths import get_plugin_dir, public_path
 from settings import load_settings, save_settings
+from slsonline import (
+    check_fake_app_id,
+    toggle_fake_app_id,
+    get_status_config,
+    save_status_config,
+)
 from utils import ensure_temp_download_dir
 
 logger = shared_logger
@@ -130,6 +136,28 @@ def SaveSettings(settings_json: str, contentScriptQuery: str = "") -> str:
     except Exception as exc:
         logger.error(f"Error saving settings: {exc}")
         return json.dumps({"success": False, "error": str(exc)})
+
+
+def CheckFakeAppId(appid: int, contentScriptQuery: str = "") -> str:
+    return check_fake_app_id(appid)
+
+
+def ToggleFakeAppId(appid: int, contentScriptQuery: str = "") -> str:
+    return toggle_fake_app_id(appid)
+
+
+def GetStatusConfig(contentScriptQuery: str = "") -> str:
+    return get_status_config()
+
+
+def SaveStatusConfig(
+    idle_appid: int,
+    idle_title: str,
+    unowned_appid: int,
+    unowned_title: str,
+    contentScriptQuery: str = "",
+) -> str:
+    return save_status_config(idle_appid, idle_title, unowned_appid, unowned_title)
 
 
 class Plugin:

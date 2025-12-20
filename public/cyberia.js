@@ -26,6 +26,26 @@
   // click/run debounce state
   const runState = { inProgress: false, appid: null };
 
+  // Update SLSonline button text based on current state
+  function updateSlsonlineButtonState(button) {
+    const appid = window.__CyberiaCurrentAppId;
+    if (!appid) return;
+
+    Millennium.callServerMethod("cyberia", "CheckFakeAppId", { appid })
+      .then((response) => {
+        const data = JSON.parse(response);
+        if (data.success) {
+          const span = button.querySelector("span");
+          if (data.exists) {
+            span.textContent = "Remove from SLSonline";
+          } else {
+            span.textContent = "Add to SLSonline";
+          }
+        }
+      })
+      .catch((err) => backendLog("Error checking FakeAppId: " + err));
+  }
+
   function ensureCyberiaStyles() {
     if (document.getElementById("cyberia-styles")) return;
     try {
@@ -476,6 +496,92 @@
       body.appendChild(accelaSection);
     }
 
+    // SLSonline Status Configuration Section (Linux only)
+    if (!isWindowsPlatform()) {
+      const statusSection = document.createElement("div");
+      statusSection.className = "cyberia-settings-section";
+      statusSection.id = "slsonline-status-section";
+
+      const statusSectionTitle = document.createElement("div");
+      statusSectionTitle.className = "cyberia-settings-section-title";
+      statusSectionTitle.textContent = "SLSsteam Status Configuration";
+      statusSection.appendChild(statusSectionTitle);
+
+      // Add help text
+      const statusHelpText = document.createElement("div");
+      statusHelpText.style.cssText =
+        "color:#999;font-size:12px;margin-bottom:10px;font-family:TrixieCyrG;";
+      statusHelpText.textContent =
+        "Configure the status settings for SLSsteam.";
+      statusSection.appendChild(statusHelpText);
+
+      // IdleStatus AppId
+      const idleGroup = document.createElement("div");
+      idleGroup.className = "cyberia-form-group";
+
+      const idleLabel = document.createElement("label");
+      idleLabel.className = "cyberia-form-label";
+      idleLabel.textContent = "Idle Status AppId";
+      const idleAppIdInput = document.createElement("input");
+      idleAppIdInput.type = "number";
+      idleAppIdInput.className = "cyberia-form-input";
+      idleAppIdInput.id = "slsonline-idle-appid";
+      idleAppIdInput.placeholder = "Idle Status AppId";
+      idleGroup.appendChild(idleLabel);
+      idleGroup.appendChild(idleAppIdInput);
+
+      // IdleStatus Title
+      const idleTitleGroup = document.createElement("div");
+      idleTitleGroup.className = "cyberia-form-group";
+
+      const idleTitleLabel = document.createElement("label");
+      idleTitleLabel.className = "cyberia-form-label";
+      idleTitleLabel.textContent = "Idle Status Title";
+      const idleTitleInput = document.createElement("input");
+      idleTitleInput.type = "text";
+      idleTitleInput.className = "cyberia-form-input";
+      idleTitleInput.id = "slsonline-idle-title";
+      idleTitleInput.placeholder = "Idle Status Title";
+      idleTitleGroup.appendChild(idleTitleLabel);
+      idleTitleGroup.appendChild(idleTitleInput);
+
+      // UnownedStatus AppId
+      const unownedGroup = document.createElement("div");
+      unownedGroup.className = "cyberia-form-group";
+
+      const unownedLabel = document.createElement("label");
+      unownedLabel.className = "cyberia-form-label";
+      unownedLabel.textContent = "Unowned Status AppId";
+      const unownedAppIdInput = document.createElement("input");
+      unownedAppIdInput.type = "number";
+      unownedAppIdInput.className = "cyberia-form-input";
+      unownedAppIdInput.id = "slsonline-unowned-appid";
+      unownedAppIdInput.placeholder = "Unowned Status AppId";
+      unownedGroup.appendChild(unownedLabel);
+      unownedGroup.appendChild(unownedAppIdInput);
+
+      // UnownedStatus Title
+      const unownedTitleGroup = document.createElement("div");
+      unownedTitleGroup.className = "cyberia-form-group";
+
+      const unownedTitleLabel = document.createElement("label");
+      unownedTitleLabel.className = "cyberia-form-label";
+      unownedTitleLabel.textContent = "Unowned Status Title";
+      const unownedTitleInput = document.createElement("input");
+      unownedTitleInput.type = "text";
+      unownedTitleInput.className = "cyberia-form-input";
+      unownedTitleInput.id = "slsonline-unowned-title";
+      unownedTitleInput.placeholder = "Unowned Status Title";
+      unownedTitleGroup.appendChild(unownedTitleLabel);
+      unownedTitleGroup.appendChild(unownedTitleInput);
+
+      statusSection.appendChild(idleGroup);
+      statusSection.appendChild(idleTitleGroup);
+      statusSection.appendChild(unownedGroup);
+      statusSection.appendChild(unownedTitleGroup);
+      body.appendChild(statusSection);
+    }
+
     modal.appendChild(body);
 
     // Button row
@@ -509,7 +615,7 @@
     document.body.appendChild(overlay);
 
     // Load current settings
-    loadCurrentSettings(apiListContainer, accelaInput);
+    loadCurrentSettings(apiListContainer, accelaInput, overlay);
 
     return overlay;
   }
@@ -611,7 +717,7 @@
   }
 
   // Helper function to load current settings
-  function loadCurrentSettings(apiListContainer, accelaInput) {
+  function loadCurrentSettings(apiListContainer, accelaInput, overlay) {
     try {
       Millennium.callServerMethod("cyberia", "GetSettings", {})
         .then((response) => {
@@ -646,6 +752,48 @@
         .catch((err) => {
           backendLog("Error loading settings: " + err);
         });
+
+      // Load SLSonline status config (only if section exists)
+      if (!isWindowsPlatform()) {
+        Millennium.callServerMethod("cyberia", "GetStatusConfig", {})
+          .then((response) => {
+            try {
+              const data = JSON.parse(response);
+              if (data.success) {
+                const idleAppIdInput = overlay.querySelector(
+                  "#slsonline-idle-appid",
+                );
+                const idleTitleInput = overlay.querySelector(
+                  "#slsonline-idle-title",
+                );
+                const unownedAppIdInput = overlay.querySelector(
+                  "#slsonline-unowned-appid",
+                );
+                const unownedTitleInput = overlay.querySelector(
+                  "#slsonline-unowned-title",
+                );
+
+                if (idleAppIdInput) {
+                  idleAppIdInput.value = data.idle_appid || "";
+                }
+                if (idleTitleInput) {
+                  idleTitleInput.value = data.idle_title || "";
+                }
+                if (unownedAppIdInput) {
+                  unownedAppIdInput.value = data.unowned_appid || "";
+                }
+                if (unownedTitleInput) {
+                  unownedTitleInput.value = data.unowned_title || "";
+                }
+              }
+            } catch (err) {
+              backendLog("Error loading status config: " + err);
+            }
+          })
+          .catch((err) => {
+            backendLog("Error loading status config: " + err);
+          });
+      }
     } catch (err) {
       backendLog("Error loading settings: " + err);
     }
@@ -659,66 +807,107 @@
       const originalText = saveBtn.innerHTML;
       saveBtn.innerHTML = "<span>Saving...</span>";
 
-      // Collect API data
-      const apiList = [];
-      const apiItems = apiListContainer.querySelectorAll(".cyberia-api-item");
-      apiItems.forEach((item) => {
-        const name = item.querySelector('input[type="text"]').value.trim();
-        const url = item.querySelectorAll('input[type="text"]')[1].value.trim();
-        const keyInput = item.querySelectorAll('input[type="text"]')[2];
-        const api_key = keyInput ? keyInput.value.trim() : "";
-        const enabledCheckbox = item.querySelector('input[type="checkbox"]');
-        const enabled = enabledCheckbox ? enabledCheckbox.checked : true;
+      // Collect SLSonline status data
+      const idleAppIdInput = overlay.querySelector("#slsonline-idle-appid");
+      const idleTitleInput = overlay.querySelector("#slsonline-idle-title");
+      const unownedAppIdInput = overlay.querySelector(
+        "#slsonline-unowned-appid",
+      );
+      const unownedTitleInput = overlay.querySelector(
+        "#slsonline-unowned-title",
+      );
 
-        if (name && url) {
-          apiList.push({
-            name: name,
-            url: url,
-            api_key: api_key,
-            enabled: enabled,
-          });
-        }
-      });
-
-      // Collect ACCELA location (only if on Windows)
-      const accela_location = accelaInput ? accelaInput.value.trim() : "";
-
-      // Create settings object
-      const settings = {
-        api_list: apiList,
-        accela_location: accela_location,
+      const statusData = {
+        idle_appid: parseInt(idleAppIdInput ? idleAppIdInput.value : 0) || 0,
+        idle_title: idleTitleInput ? idleTitleInput.value.trim() : "",
+        unowned_appid:
+          parseInt(unownedAppIdInput ? unownedAppIdInput.value : 0) || 0,
+        unowned_title: unownedTitleInput ? unownedTitleInput.value.trim() : "",
       };
 
-      // Save to backend using Promise-style
-      Millennium.callServerMethod("cyberia", "SaveSettings", {
-        settings_json: JSON.stringify(settings),
-      })
-        .then((response) => {
-          try {
+      // Save status config first (only if on Linux)
+      if (!isWindowsPlatform()) {
+        Millennium.callServerMethod("cyberia", "SaveStatusConfig", statusData)
+          .then((response) => {
             const data = JSON.parse(response);
-            if (data.success) {
-              backendLog("Settings saved successfully");
-
-              // Show success feedback
-              saveBtn.innerHTML = "<span>✓ Saved!</span>";
-              saveBtn.style.background = "#28a745";
-
-              // Close modal after delay
-              setTimeout(() => {
-                overlay.remove();
-              }, 2000);
-            } else {
-              throw new Error(data.error || "Unknown error");
+            if (!data.success) {
+              throw new Error(data.error || "Failed to save status config");
             }
-          } catch (err) {
-            backendLog("Error parsing save response: " + err);
-            showSaveError(saveBtn, originalText, "Error parsing save response");
-          }
-        })
-        .catch((err) => {
-          backendLog("Error saving settings: " + err);
-          showSaveError(saveBtn, originalText, "Error saving settings");
-        });
+          })
+          .then(() => {
+            // Collect API data
+            const apiList = [];
+            const apiItems =
+              apiListContainer.querySelectorAll(".cyberia-api-item");
+            apiItems.forEach((item) => {
+              const name = item
+                .querySelector('input[type="text"]')
+                .value.trim();
+              const url = item
+                .querySelectorAll('input[type="text"]')[1]
+                .value.trim();
+              const keyInput = item.querySelectorAll('input[type="text"]')[2];
+              const api_key = keyInput ? keyInput.value.trim() : "";
+              const enabledCheckbox = item.querySelector(
+                'input[type="checkbox"]',
+              );
+              const enabled = enabledCheckbox ? enabledCheckbox.checked : true;
+
+              if (name && url) {
+                apiList.push({
+                  name: name,
+                  url: url,
+                  api_key: api_key,
+                  enabled: enabled,
+                });
+              }
+            });
+
+            // Collect ACCELA location (only if on Windows)
+            const accela_location = accelaInput ? accelaInput.value.trim() : "";
+
+            // Create settings object
+            const settings = {
+              api_list: apiList,
+              accela_location: accela_location,
+            };
+
+            // Save to backend using Promise-style
+            Millennium.callServerMethod("cyberia", "SaveSettings", {
+              settings_json: JSON.stringify(settings),
+            })
+              .then((response) => {
+                try {
+                  const data = JSON.parse(response);
+                  if (data.success) {
+                    backendLog("Settings saved successfully");
+
+                    // Show success feedback
+                    saveBtn.innerHTML = "<span>✓ Saved!</span>";
+                    saveBtn.style.background = "#28a745";
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                      overlay.remove();
+                    }, 2000);
+                  } else {
+                    throw new Error(data.error || "Unknown error");
+                  }
+                } catch (err) {
+                  backendLog("Error parsing save response: " + err);
+                  showSaveError(
+                    saveBtn,
+                    originalText,
+                    "Error parsing save response",
+                  );
+                }
+              })
+              .catch((err) => {
+                backendLog("Error saving settings: " + err);
+                showSaveError(saveBtn, originalText, "Error saving settings");
+              });
+          });
+      }
     } catch (err) {
       backendLog("Error saving settings: " + err);
       showSaveError(saveBtn, "<span>Save</span>", "Error saving settings");
@@ -746,7 +935,7 @@
 
     if (steamdbContainer) {
       // Update existing buttons (even if not a page change)
-      const existingBtn = document.querySelector(".cyberia-button");
+      const existingBtn = document.querySelector(".cyberia-download-btn");
       if (existingBtn) {
         const addViaText = "Enter Cyberia";
         existingBtn.title = addViaText;
@@ -772,10 +961,11 @@
       cyberiaButton.href = "#";
       // Copy classes from an existing button to match look-and-feel, but set our own label
       if (referenceBtn && referenceBtn.className) {
-        cyberiaButton.className = referenceBtn.className + " cyberia-button";
+        cyberiaButton.className =
+          referenceBtn.className + " cyberia-button cyberia-download-btn";
       } else {
         cyberiaButton.className =
-          "btnv6_blue_hoverfade btn_medium cyberia-button";
+          "btnv6_blue_hoverfade btn_medium cyberia-button cyberia-download-btn";
       }
       const span = document.createElement("span");
       const addViaText = "Enter Cyberia";
@@ -827,7 +1017,7 @@
       const settingsButton = document.createElement("a");
       settingsButton.href = "#";
       settingsButton.className =
-        "btnv6_blue_hoverfade btn_medium cyberia-button";
+        "btnv6_blue_hoverfade btn_medium cyberia-button cyberia-settings-btn";
       const settingsSpan = document.createElement("span");
       const settingsText = "Settings";
       settingsSpan.textContent = settingsText;
@@ -844,6 +1034,32 @@
 
       // Insert settings button after cyberia button
       cyberiaButton.after(settingsButton);
+
+      // Create SLSonline button (insert between cyberia and settings)
+      const slsonlineButton = document.createElement("a");
+      slsonlineButton.href = "#";
+      slsonlineButton.className =
+        "btnv6_blue_hoverfade btn_medium cyberia-button cyberia-slsonline-btn";
+      const slsonlineSpan = document.createElement("span");
+      slsonlineSpan.textContent = "Add to SLSonline";
+      slsonlineButton.appendChild(slsonlineSpan);
+      slsonlineButton.title = "Add/Remove from SLSteam FakeAppIds";
+      slsonlineButton.style.marginLeft = "6px";
+
+      // Local click handler suppressed; delegated handler manages actions
+      slsonlineButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        backendLog("SLSonline button clicked (delegated handler will process)");
+      });
+
+      // Insert slsonline button after cyberia button (before settings)
+      cyberiaButton.after(slsonlineButton);
+
+      // Move settings button to the end (after slsonline)
+      slsonlineButton.after(settingsButton);
+
+      // Check initial state for SLSonline button
+      updateSlsonlineButtonState(slsonlineButton);
 
       window.__CyberiaButtonInserted = true;
       backendLog("Cyberia button inserted");
@@ -875,15 +1091,26 @@
       if (anchor) {
         evt.preventDefault();
 
-        // Check if this is the settings button (it should be the second button)
-        const settingsBtn = anchor;
-        const cyberiaBtn = document.querySelector(".cyberia-button");
+        // Check if this is the SLSonline button
+        if (anchor.classList.contains("cyberia-slsonline-btn")) {
+          backendLog("SLSonline button clicked");
+          const appid = window.__CyberiaCurrentAppId;
+          if (appid) {
+            Millennium.callServerMethod("cyberia", "ToggleFakeAppId", { appid })
+              .then((response) => {
+                const data = JSON.parse(response);
+                if (data.success) {
+                  updateSlsonlineButtonState(anchor);
+                  backendLog("FakeAppId " + data.action + ": " + appid);
+                }
+              })
+              .catch((err) => backendLog("Error toggling FakeAppId: " + err));
+          }
+          return;
+        }
 
-        // Check if clicked button is the settings button by comparing with the second button
-        // The settings button is added after cyberia button, so we check if there are multiple buttons
-        const allCyberiaBtns = document.querySelectorAll(".cyberia-button");
-        if (allCyberiaBtns.length > 1 && anchor === allCyberiaBtns[1]) {
-          // This is the settings button
+        // Check if this is the settings button
+        if (anchor.classList.contains("cyberia-settings-btn")) {
           backendLog("Settings button clicked");
           showSettingsPopup();
           return;
@@ -1032,13 +1259,15 @@
               clearInterval(timer);
               runState.inProgress = false;
               runState.appid = null;
-              // remove all Cyberia buttons since game is added (works even if popup is hidden)
-              const cyberiaBtns = document.querySelectorAll(".cyberia-button");
-              cyberiaBtns.forEach((btn) => {
-                if (btn && btn.parentElement) {
-                  btn.parentElement.removeChild(btn);
-                }
-              });
+              // remove only the Enter Cyberia download button since game is added (works even if popup is hidden)
+              const cyberiaDownloadBtn = document.querySelector(
+                ".cyberia-download-btn",
+              );
+              if (cyberiaDownloadBtn && cyberiaDownloadBtn.parentElement) {
+                cyberiaDownloadBtn.parentElement.removeChild(
+                  cyberiaDownloadBtn,
+                );
+              }
               // reset the insertion flag
               window.__CyberiaButtonInserted = false;
             }
