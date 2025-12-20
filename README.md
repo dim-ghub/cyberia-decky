@@ -58,11 +58,6 @@ After installing the plugin in Millennium:
 2. Run the installation script: `./install_deps.sh`
 3. This will install the required dependencies for the plugin to function properly.
 
-**For Windows users:**
-1. Navigate to the plugin directory: `C:\path\to\millennium\plugins\cyberia`
-2. Run the installation script: `install_deps.bat`
-3. This will install the required dependencies for the plugin to function properly.
-
 ## Configuration
 
 1. Click the "Settings" button next to "Enter Cyberia"
@@ -82,5 +77,6 @@ After installing the plugin in Millennium:
 ## License
 
 This project is provided as-is for educational and personal use. Please ensure compliance with Steam's Terms of Service and applicable laws when using this plugin.
+
 
 
