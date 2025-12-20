@@ -14,31 +14,6 @@ if [ ! -f "requirements.txt" ]; then
     exit 1
 fi
 
-# Remove existing virtual environment if it exists
-if [ -d ".venv" ]; then
-    echo "Removing existing virtual environment..."
-    if ! rm -rf .venv; then
-        echo "Error: Failed to remove existing virtual environment"
-        exit 1
-    fi
-fi
-
-# Create new virtual environment
-echo "Creating virtual environment..."
-if ! python3 -m venv .venv; then
-    echo "Error: Failed to create virtual environment"
-    exit 1
-fi
-echo "Virtual environment created successfully"
-
-# Install dependencies in local venv
-echo "Installing dependencies in local venv..."
-if ! .venv/bin/pip install -r requirements.txt; then
-    echo "Error: Failed to install dependencies in local venv"
-    exit 1
-fi
-echo "Local venv dependencies installed successfully"
-
 # Install dependencies in Millennium venv if it exists
 MILLENNIUM_VENV="$HOME/.local/share/millennium/.venv"
 if [ -d "$MILLENNIUM_VENV" ]; then
