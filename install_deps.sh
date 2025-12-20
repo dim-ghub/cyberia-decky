@@ -31,11 +31,25 @@ if ! python3 -m venv .venv; then
 fi
 echo "Virtual environment created successfully"
 
-# Install dependencies
-echo "Installing dependencies..."
+# Install dependencies in local venv
+echo "Installing dependencies in local venv..."
 if ! .venv/bin/pip install -r backend/requirements.txt; then
-    echo "Error: Failed to install dependencies"
+    echo "Error: Failed to install dependencies in local venv"
     exit 1
+fi
+echo "Local venv dependencies installed successfully"
+
+# Install dependencies in Millennium venv if it exists
+MILLENNIUM_VENV="$HOME/.local/share/millennium/.venv"
+if [ -d "$MILLENNIUM_VENV" ]; then
+    echo "Installing dependencies in Millennium venv..."
+    if ! "$MILLENNIUM_VENV/bin/pip" install -r backend/requirements.txt; then
+        echo "Warning: Failed to install dependencies in Millennium venv"
+    else
+        echo "Millennium venv dependencies installed successfully"
+    fi
+else
+    echo "Note: Millennium venv not found at $MILLENNIUM_VENV, skipping"
 fi
 
 echo "Setup completed successfully!"
