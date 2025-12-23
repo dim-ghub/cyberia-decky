@@ -807,7 +807,44 @@
       const originalText = saveBtn.innerHTML;
       saveBtn.innerHTML = "<span>Saving...</span>";
 
-      // Collect SLSonline status data
+      // Collect API data
+      const apiList = [];
+      const apiItems =
+        apiListContainer.querySelectorAll(".cyberia-api-item");
+      apiItems.forEach((item) => {
+        const name = item
+          .querySelector('input[type="text"]')
+          .value.trim();
+        const url = item
+          .querySelectorAll('input[type="text"]')[1]
+          .value.trim();
+        const keyInput = item.querySelectorAll('input[type="text"]')[2];
+        const api_key = keyInput ? keyInput.value.trim() : "";
+        const enabledCheckbox = item.querySelector(
+          'input[type="checkbox"]',
+        );
+        const enabled = enabledCheckbox ? enabledCheckbox.checked : true;
+
+        if (name && url) {
+          apiList.push({
+            name: name,
+            url: url,
+            api_key: api_key,
+            enabled: enabled,
+          });
+        }
+      });
+
+      // Collect ACCELA location (only if on Windows)
+      const accela_location = accelaInput ? accelaInput.value.trim() : "";
+
+      // Create settings object
+      const settings = {
+        api_list: apiList,
+        accela_location: accela_location,
+      };
+
+      // Collect SLSonline status data (only needed for Linux)
       const idleAppIdInput = overlay.querySelector("#slsonline-idle-appid");
       const idleTitleInput = overlay.querySelector("#slsonline-idle-title");
       const unownedAppIdInput = overlay.querySelector(
@@ -825,7 +862,44 @@
         unowned_title: unownedTitleInput ? unownedTitleInput.value.trim() : "",
       };
 
-      // Save status config first (only if on Linux)
+      // Helper function to save settings
+      const saveSettingsToBackend = () => {
+        Millennium.callServerMethod("cyberia", "SaveSettings", {
+          settings_json: JSON.stringify(settings),
+        })
+          .then((response) => {
+            try {
+              const data = JSON.parse(response);
+              if (data.success) {
+                backendLog("Settings saved successfully");
+
+                // Show success feedback
+                saveBtn.innerHTML = "<span>✓ Saved!</span>";
+                saveBtn.style.background = "#28a745";
+
+                // Close modal after delay
+                setTimeout(() => {
+                  overlay.remove();
+                }, 2000);
+              } else {
+                throw new Error(data.error || "Unknown error");
+              }
+            } catch (err) {
+              backendLog("Error parsing save response: " + err);
+              showSaveError(
+                saveBtn,
+                originalText,
+                "Error parsing save response",
+              );
+            }
+          })
+          .catch((err) => {
+            backendLog("Error saving settings: " + err);
+            showSaveError(saveBtn, originalText, "Error saving settings");
+          });
+      };
+
+      // Save status config first (only if on Linux), then save settings
       if (!isWindowsPlatform()) {
         Millennium.callServerMethod("cyberia", "SaveStatusConfig", statusData)
           .then((response) => {
@@ -834,79 +908,14 @@
               throw new Error(data.error || "Failed to save status config");
             }
           })
-          .then(() => {
-            // Collect API data
-            const apiList = [];
-            const apiItems =
-              apiListContainer.querySelectorAll(".cyberia-api-item");
-            apiItems.forEach((item) => {
-              const name = item
-                .querySelector('input[type="text"]')
-                .value.trim();
-              const url = item
-                .querySelectorAll('input[type="text"]')[1]
-                .value.trim();
-              const keyInput = item.querySelectorAll('input[type="text"]')[2];
-              const api_key = keyInput ? keyInput.value.trim() : "";
-              const enabledCheckbox = item.querySelector(
-                'input[type="checkbox"]',
-              );
-              const enabled = enabledCheckbox ? enabledCheckbox.checked : true;
-
-              if (name && url) {
-                apiList.push({
-                  name: name,
-                  url: url,
-                  api_key: api_key,
-                  enabled: enabled,
-                });
-              }
-            });
-
-            // Collect ACCELA location (only if on Windows)
-            const accela_location = accelaInput ? accelaInput.value.trim() : "";
-
-            // Create settings object
-            const settings = {
-              api_list: apiList,
-              accela_location: accela_location,
-            };
-
-            // Save to backend using Promise-style
-            Millennium.callServerMethod("cyberia", "SaveSettings", {
-              settings_json: JSON.stringify(settings),
-            })
-              .then((response) => {
-                try {
-                  const data = JSON.parse(response);
-                  if (data.success) {
-                    backendLog("Settings saved successfully");
-
-                    // Show success feedback
-                    saveBtn.innerHTML = "<span>✓ Saved!</span>";
-                    saveBtn.style.background = "#28a745";
-
-                    // Close modal after delay
-                    setTimeout(() => {
-                      overlay.remove();
-                    }, 2000);
-                  } else {
-                    throw new Error(data.error || "Unknown error");
-                  }
-                } catch (err) {
-                  backendLog("Error parsing save response: " + err);
-                  showSaveError(
-                    saveBtn,
-                    originalText,
-                    "Error parsing save response",
-                  );
-                }
-              })
-              .catch((err) => {
-                backendLog("Error saving settings: " + err);
-                showSaveError(saveBtn, originalText, "Error saving settings");
-              });
+          .then(saveSettingsToBackend)
+          .catch((err) => {
+            backendLog("Error saving status config: " + err);
+            showSaveError(saveBtn, originalText, "Error saving status config");
           });
+      } else {
+        // On Windows, save settings directly without status config
+        saveSettingsToBackend();
       }
     } catch (err) {
       backendLog("Error saving settings: " + err);
