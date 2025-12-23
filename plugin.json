@@ -3,7 +3,7 @@
   "name": "cyberia",
   "common_name": "Cyberia",
   "description": "LETS ALL LOVE LAIN",
-  "version": "2.1",
+  "version": "2.2",
   "include": ["public"],
   "venv": ".venv",
   "useBackend": true,
