@@ -1,11 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/SteamClientHomebrew/Millennium/main/src/sys/plugin-schema.json",
-  "name": "cyberia",
-  "common_name": "Cyberia",
-  "description": "LETS ALL LOVE LAIN",
-  "version": "2.2",
-  "include": ["public"],
-  "venv": ".venv",
-  "useBackend": true,
-  "backend": "backend"
+  "name": "Cyberia",
+  "author": "Cyberia Team",
+  "version": "1.0.0",
+  "description": "LETS ALL LOVE LAIN - Enhanced Steam client plugin for game downloads and management"
 }

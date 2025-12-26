@@ -1,0 +1,31 @@
+{
+  "name": "cyberia-decky",
+  "version": "1.0.0",
+  "description": "LETS ALL LOVE LAIN - Enhanced Steam client plugin for game downloads and management",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["steam", "decky", "plugin", "cyberia"],
+  "author": "Cyberia Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@decky/ui": "^4.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.26.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
